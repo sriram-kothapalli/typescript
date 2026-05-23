@@ -1,0 +1,77 @@
+{
+  // compilerOptions → is the main key that holds ALL TypeScript rules
+  // everything inside this block is an instruction to the TypeScript compiler
+  "compilerOptions": {
+
+    "target": "ESNext",
+    // target    → is the key (instruction name)
+    // ESNext    → is the value (compile to the latest modern JavaScript)
+    // why       → Playwright runs on Node.js which supports all modern JS
+    //             no need to convert your code to old JavaScript style
+
+    "module": "CommonJS",
+    // module    → is the key (tells TypeScript which module system to use)
+    // CommonJS  → is the value (Node.js style — uses require() behind the scenes)
+    // why       → Node.js uses CommonJS by default
+    //             wrong value here causes: SyntaxError: Cannot use import statement
+
+    "moduleResolution": "bundler",
+    // moduleResolution → is the key (tells TypeScript HOW to find imported files)
+    // bundler          → is the value (modern replacement for the old "node" value)
+    // why              → "node" was deprecated in TypeScript 6.0
+    //                    "bundler" is the new correct setting for Playwright projects
+
+    "strict": true,
+    // strict  → is the key (master switch for ALL safety rules)
+    // true    → is the value (turn ALL strict rules ON)
+    // why     → enables all checks below in one line:
+    //           noImplicitAny       → no variable can silently become any type
+    //           strictNullChecks    → must handle null before using a value
+    //           strictFunctionTypes → function parameters must match exactly
+
+    "esModuleInterop": true,
+    // esModuleInterop → is the key
+    // true            → is the value
+    // why             → allows you to write:  import fs from 'fs'
+    //                   instead of:           import * as fs from 'fs'
+    //                   makes imports cleaner and compatible with CommonJS packages
+
+    "skipLibCheck": true,
+    // skipLibCheck → is the key
+    // true         → is the value
+    // why          → tells TypeScript to skip type checking inside node_modules
+    //                without this, TypeScript checks every library you installed
+    //                which causes hundreds of irrelevant errors and slows everything down
+
+    "types": ["node"],
+    // types    → is the key (tells TypeScript which @types/* packages to load globally)
+    // ["node"] → is the value (an array with one item — the node type package)
+    // why      → activates @types/node across every file in the project
+    //            without this you still get: Cannot find name 'process'
+    //            even after running: npm install --save-dev @types/node
+
+    "paths": {
+    // paths → is the key (defines shortcut aliases for import paths)
+    // {}    → is the value (an object where each key is an alias)
+
+      "@pom/*": ["./page-objects/*"]
+      // "@pom/*"             → is the alias key (the shortcut you type in your imports)
+      // ["./page-objects/*"] → is the value (the real folder it points to)
+      // *                    → is a wildcard meaning "any file name"
+      // ./                   → means start from the project root folder
+      // why                  → lets you write:  import { LoginPage } from '@pom/LoginPage'
+      //                        instead of:      import { LoginPage } from '../../page-objects/LoginPage'
+    }
+  },
+
+  "include": ["tests/**/*", "page-objects/**/*", "playwright.config.ts"]
+  // include          → is the key (tells TypeScript WHICH files to type-check)
+  // []               → is the value (an array of folder patterns to include)
+  // "tests/**/*"     → check every file inside the tests folder and all sub-folders
+  // "page-objects/**/*" → check every file inside page-objects and all sub-folders
+  // "playwright.config.ts" → also check the Playwright config file at the root
+  // **               → means any sub-folder at any depth
+  // *                → means any file with any extension
+  // why              → without include, TypeScript checks node_modules too
+  //                    which causes thousands of false errors
+}
