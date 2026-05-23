@@ -386,7 +386,7 @@
         //   const t: Test = { priority: undefined }  ← ❌ error
         //   const t: Test = { priority: "high" }     ← ✅ the actual string type
         //   const t: Test = {}                       ← ✅ absent (field omitted entirely)
-        "exactOptionalPropertyTypes": true,
+        "exactOptionalPropertyTypes": false,
         // noPropertyAccessFromIndexSignature → is the KEY
         // true                               → is the VALUE
         // what   → when an object uses an index signature, you must use bracket notation
@@ -395,7 +395,7 @@
         //   config.timeout      ← ❌ dot notation not allowed for index signatures
         //   config["timeout"]   ← ✅ bracket notation required
         // why    → makes it visually obvious that this is a dynamic lookup, not a known key
-        "noPropertyAccessFromIndexSignature": true,
+        "noPropertyAccessFromIndexSignature": false,
         // ══════════════════════════════════════════════════════════════
         //  SECTION 6 — TYPES
         //  Controls which type definition packages TypeScript loads globally
