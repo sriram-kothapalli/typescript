@@ -1,511 +1,274 @@
 {
-    // ╔══════════════════════════════════════════════════════════════╗
-    //   tsconfig.json — ADVANCED CONFIGURATION
-    //   Every key, value, and why it exists — explained line by line
-    //   Built for: Playwright + TypeScript projects
-    //   ✅ Zero errors — tested against TypeScript 6.0+
-    // ╚══════════════════════════════════════════════════════════════╝
-    // compilerOptions → is the KEY
-    // {}              → is the VALUE (object containing all TypeScript rules)
-    // what it does    → every instruction to the TypeScript compiler lives here
-    "compilerOptions": {
-        // ══════════════════════════════════════════════════════════════
-        //  SECTION 1 — LANGUAGE AND ENVIRONMENT
-        //  Controls what version of JavaScript your TypeScript compiles TO
-        // ══════════════════════════════════════════════════════════════
-        // target   → is the KEY
-        // "ES2022" → is the VALUE
-        // what     → tells TypeScript which JavaScript version to compile your code into
-        // ES2022   → supports: async/await, classes, optional chaining (?.), nullish (??)
-        //            arrow functions, template literals, destructuring — all Playwright needs
-        // why not ESNext → ES2022 is a stable fixed target — ESNext shifts every year
-        // why not ES5    → ES5 would rewrite async/await into callback hell — avoid for Playwright
-        "target": "ES2022",
-        // lib      → is the KEY
-        // []       → is the VALUE (array of built-in type libraries to load)
-        // what     → tells TypeScript which built-in JavaScript APIs exist in your environment
-        // "ES2022"       → Array, Promise, Map, Set, Object — all ES2022 built-in types
-        // "DOM"          → document, window, HTMLElement — browser types Playwright interacts with
-        // "DOM.Iterable" → makes NodeList, HTMLCollection work with forEach and for..of loops
-        // without lib    → TypeScript does not know Promise or document.getElementById exist
-        "lib": [
-            "ES2022",
-            "DOM",
-            "DOM.Iterable"
-        ],
-        // experimentalDecorators → is the KEY
-        // true                   → is the VALUE
-        // what    → enables the @Decorator syntax above classes and methods
-        // example →
-        //   @TestSuite("Login Tests")
-        //   class LoginTests { }
-        // use in  → Playwright reporter plugins, dependency injection frameworks
-        // without → TypeScript errors on any @ symbol above a class or method
-        "experimentalDecorators": true,
-        // emitDecoratorMetadata → is the KEY
-        // true                  → is the VALUE
-        // what     → makes TypeScript emit extra type metadata when decorators are used
-        // requires → experimentalDecorators must also be true
-        // why      → some frameworks need to read constructor parameter types at runtime
-        //            this option makes that metadata available
-        "emitDecoratorMetadata": true,
-        // useDefineForClassFields → is the KEY
-        // true                    → is the VALUE
-        // what → uses the modern JavaScript standard (Object.defineProperty) for class fields
-        //        instead of the old TypeScript-style assignment in the constructor
-        // why  → aligns TypeScript with modern JavaScript engines
-        //        prevents subtle bugs when using decorators with class properties
-        "useDefineForClassFields": true,
-        // ══════════════════════════════════════════════════════════════
-        //  SECTION 2 — MODULES
-        //  Controls how TypeScript handles import and export statements
-        //
-        //  ⚠️  IMPORTANT RULE:
-        //  module and moduleResolution MUST be paired correctly:
-        //    "module": "Node16"     ←→  "moduleResolution": "Node16"    ✅
-        //    "module": "Bundler"    ←→  "moduleResolution": "Bundler"   ✅
-        //    "module": "CommonJS"   ←→  "moduleResolution": "node10"    ✅ (deprecated)
-        //  Mixing them causes: Option 'module' must be set to 'Node16' error
-        // ══════════════════════════════════════════════════════════════
-        // module    → is the KEY
-        // "Node16"  → is the VALUE
-        // what      → tells TypeScript which module system to compile imports/exports into
-        // "Node16"  → the modern Node.js module system (supports both ESM and CommonJS)
-        //             your `import x from 'y'` is kept as-is (no rewrite to require())
-        // why Node16 → must match moduleResolution below — they are a pair
-        //              Playwright and modern Node.js fully support Node16 modules
-        // ❌ wrong   → "module": "CommonJS" paired with "moduleResolution": "Node16" = error
-        "module": "Node16",
-        // moduleResolution → is the KEY
-        // "Node16"         → is the VALUE
-        // what   → tells TypeScript HOW to find a file when you write an import statement
-        // Node16 → follows modern Node.js 16+ file lookup rules:
-        //          1. exact file match
-        //          2. file + .ts / .js extension
-        //          3. folder/index.ts
-        //          4. node_modules/ lookup
-        // why not "node" (node10) → deprecated in TypeScript 6.0 — causes deprecation error
-        // why not "bundler"       → for webpack/vite projects, not raw Node.js/Playwright
-        // ❌ wrong → "moduleResolution": "Node16" paired with "module": "CommonJS" = error
-        "moduleResolution": "Node16",
-        // rootDir  → is the KEY
-        // "."      → is the VALUE (project root folder)
-        // what     → tells TypeScript where your SOURCE files start from
-        // why      → TypeScript mirrors this structure inside outDir
-        //            tests/login.spec.ts → dist/tests/login.spec.js
-        //            page-objects/LoginPage.ts → dist/page-objects/LoginPage.js
-        // without it → TypeScript guesses the rootDir and may get it wrong
-        "rootDir": ".",
-        // resolveJsonModule → is the KEY
-        // true              → is the VALUE
-        // what   → allows TypeScript to import .json files directly
-        // example:
-        //   import users from './testdata/users.json'
-        //   console.log(users[0].email)   ← TypeScript knows the JSON shape ✅
-        // without it → Cannot find module './users.json'
-        "resolveJsonModule": true,
-        // allowSyntheticDefaultImports → is the KEY
-        // true                         → is the VALUE
-        // what   → allows `import x from 'module'` even when a module has no default export
-        // example:
-        //   import fs from 'fs'         ← ✅ clean (with this setting)
-        //   import * as fs from 'fs'    ← required without this setting
-        "allowSyntheticDefaultImports": true,
-        // paths → is the KEY
-        // {}    → is the VALUE (object where each key is an alias, value is the real path)
-        // what  → defines import shortcuts so you avoid long relative paths like ../../..
-        // note  → baseUrl is REMOVED (deprecated in TS 6.0)
-        //         instead, every path value starts with "./" (relative to project root)
-        // *     → wildcard meaning "any file name"
-        // ./    → means start from the project root (where tsconfig.json lives)
-        "paths": {
-            // "@pages/*" → is the alias you type in imports
-            // replaces   → import { LoginPage } from '../../tests/pages/LoginPage'
-            // you write  → import { LoginPage } from '@pages/LoginPage'
-            // two folders listed → TypeScript checks BOTH for the file
-            "@pages/*": [
-                "./tests/pages/*",
-                "./examples/pages/*"
-            ],
-            // "@pom/*" → shortcut for Page Object Model files
-            // you write → import { LoginPage } from '@pom/LoginPage'
-            "@pom/*": [
-                "./page-objects/*"
-            ],
-            // "@testdata/*" → shortcut for test data files
-            // you write     → import users from '@testdata/users'
-            "@testdata/*": [
-                "./tests/testdata/*"
-            ],
-            // "@fixtures" → shortcut for ONE exact file (no wildcard)
-            // you write   → import { test } from '@fixtures'
-            "@fixtures": [
-                "./tests/fixtures/testFixtures"
-            ],
-            // "@pagesetup" → shortcut for the page setup helper file
-            // you write    → import { setupPage } from '@pagesetup'
-            "@pagesetup": [
-                "./test-setup/page-setup"
-            ],
-            // "@helpers/*" → shortcut for shared helper and utility functions
-            // you write    → import { waitForElement } from '@helpers/waits'
-            "@helpers/*": [
-                "./tests/helpers/*"
-            ],
-            // "@config" → shortcut for the Playwright config file
-            // you write → import config from '@config'
-            "@config": [
-                "./playwright.config"
-            ],
-            // "@types-custom/*" → shortcut for your own custom type definition files
-            // you write         → import type { LoginData } from '@types-custom/login'
-            "@types-custom/*": [
-                "./tests/types/*"
-            ]
-        },
-        // ══════════════════════════════════════════════════════════════
-        //  SECTION 3 — EMIT
-        //  Controls what files TypeScript OUTPUTS after compilation
-        // ══════════════════════════════════════════════════════════════
-        // outDir  → is the KEY
-        // "dist"  → is the VALUE
-        // what    → compiled .js files are placed inside this folder
-        // result  → tests/login.spec.ts → dist/tests/login.spec.js
-        // why     → keeps compiled output SEPARATE from your TypeScript source files
-        // without → compiled .js files appear right next to .ts files (messy)
-        "outDir": "dist",
-        // sourceMap → is the KEY
-        // true      → is the VALUE
-        // what   → generates a .map file next to each compiled .js file
-        // why    → when a test fails, errors point to compiled .js lines by default
-        //          source maps redirect those errors to your original .ts line numbers
-        // result → login.spec.js + login.spec.js.map are both created in dist/
-        "sourceMap": true,
-        // inlineSources → is the KEY
-        // true          → is the VALUE
-        // what   → embeds the original TypeScript code directly INSIDE the .map file
-        // why    → in CI environments (GitHub Actions), the .ts source files may not exist
-        //          inlining them inside the map means error reports always show your .ts code
-        //          even on remote CI servers where only dist/ is present
-        "inlineSources": true,
-        // removeComments → is the KEY
-        // true           → is the VALUE
-        // what   → strips all // and /* */ comments from compiled .js files in dist/
-        // why    → reduces compiled file size — comments are useful in .ts source
-        //          but they are unnecessary bytes in compiled output
-        // note   → your original .ts files KEEP their comments — only dist/ is stripped
-        "removeComments": true,
-        // declaration → is the KEY
-        // false       → is the VALUE
-        // what   → controls whether TypeScript generates .d.ts type declaration files
-        // false  → do NOT generate them
-        // why    → .d.ts files are only for publishing a reusable library for other teams
-        //          for an internal Playwright test project — completely unnecessary
-        // set true → only if you are building a shared internal library
-        "declaration": false,
-        // declarationMap → is the KEY
-        // false          → is the VALUE
-        // what   → source maps for .d.ts files
-        // false  → do NOT generate (since declaration is false, there is nothing to map)
-        "declarationMap": false,
-        // importHelpers → is the KEY
-        // true          → is the VALUE
-        // what   → TypeScript compiles async/await to ES6 by injecting small helper functions
-        //          with importHelpers: true → helpers are imported ONCE from tslib package
-        //          instead of being copied into every single compiled file
-        // why    → significantly reduces total compiled output size
-        // requires → npm install tslib
-        "importHelpers": true,
-        // noEmit → is the KEY
-        // false  → is the VALUE
-        // what   → controls whether TypeScript writes .js files to disk
-        // false  → DO write output (normal behaviour)
-        // set true → when you only want type checking, no compilation output
-        //            useful in CI: tsc --noEmit  checks types, produces nothing
-        "noEmit": false,
-        // noEmitOnError → is the KEY
-        // true          → is the VALUE
-        // what   → if TypeScript finds ANY type error → do NOT write any .js output files
-        // why    → prevents broken JavaScript from being generated when types are wrong
-        //          forces you to fix all errors before any compiled output is produced
-        // without → TypeScript writes .js files even when your .ts files have type errors
-        "noEmitOnError": true,
-        // ══════════════════════════════════════════════════════════════
-        //  SECTION 4 — INTEROPERABILITY
-        //  Controls how TypeScript handles different module formats
-        // ══════════════════════════════════════════════════════════════
-        // esModuleInterop → is the KEY
-        // true            → is the VALUE
-        // what   → makes importing CommonJS packages feel like importing ES modules
-        // without:  import * as path from 'path'   ← required old way
-        // with:     import path from 'path'         ← clean modern way
-        // also enables → allowSyntheticDefaultImports automatically
-        "esModuleInterop": true,
-        // forceConsistentCasingInFileNames → is the KEY
-        // true                             → is the VALUE
-        // what   → errors if your import casing does not match the actual file name
-        // why    → Windows is case-insensitive (LoginPage = loginpage)
-        //          Linux CI (GitHub Actions) is case-sensitive (LoginPage ≠ loginpage)
-        //          mismatch → works on your laptop, crashes in CI pipeline
-        // example:
-        //   File:           LoginPage.ts
-        //   Your import:    from './loginpage'    ← ❌ crashes on Linux CI
-        //   Correct import: from './LoginPage'    ← ✅ exact casing match
-        "forceConsistentCasingInFileNames": true,
-        // isolatedModules → is the KEY
-        // true            → is the VALUE
-        // what   → checks each file independently as if it has no knowledge of other files
-        // why    → build tools like esbuild and Babel compile one file at a time
-        //          this setting catches code that would break under those tools
-        // catches:
-        //   export { LoginData }        ← ❌ is this a type or a value? esbuild cannot tell
-        //   export type { LoginData }   ← ✅ explicitly a type — esbuild handles this safely
-        "isolatedModules": true,
-        // ══════════════════════════════════════════════════════════════
-        //  SECTION 5 — TYPE CHECKING
-        //  All the rules that catch bugs before your tests run
-        // ══════════════════════════════════════════════════════════════
-        // strict → is the KEY
-        // true   → is the VALUE
-        // what   → master switch that enables ALL strict rules below in one line
-        // turns ON automatically:
-        //   noImplicitAny              → no variable silently becomes any type
-        //   strictNullChecks           → must handle null/undefined before using
-        //   strictFunctionTypes        → function param types must match exactly
-        //   strictBindCallApply        → checks bind/call/apply arguments
-        //   strictPropertyInitialization → class props must be initialized
-        //   noImplicitThis             → no untyped 'this' in functions
-        //   alwaysStrict               → adds 'use strict' to all compiled files
-        "strict": true,
-        // noImplicitAny → already ON via strict:true — stated explicitly for team clarity
-        // what   → error if TypeScript cannot figure out a type and would use 'any'
-        // example:
-        //   function run(data) { }          ← ❌ data silently becomes any
-        //   function run(data: string) { }  ← ✅ type declared explicitly
-        "noImplicitAny": true,
-        // strictNullChecks → already ON via strict:true — stated for clarity
-        // what   → null and undefined cannot be used where a real value is expected
-        // example:
-        //   const el = document.getElementById("btn")
-        //   el.click()           ← ❌ el could be null
-        //   if (el) el.click()   ← ✅ checked first
-        //   el?.click()          ← ✅ optional chaining — safe shorthand
-        "strictNullChecks": true,
-        // strictFunctionTypes → already ON via strict:true — stated for clarity
-        // what   → function parameters must match exactly when assigning functions
-        // example:
-        //   type Handler = (e: MouseEvent) => void
-        //   const fn: Handler = (e: Event) => {}      ← ❌ Event is too broad
-        //   const fn: Handler = (e: MouseEvent) => {} ← ✅ exact match
-        "strictFunctionTypes": true,
-        // strictBindCallApply → already ON via strict:true — stated for clarity
-        // what   → checks arguments passed to .bind() .call() .apply() match the function
-        // example:
-        //   function add(x: number, y: number) { return x + y }
-        //   add.call(null, 1, "two")  ← ❌ "two" is not a number
-        //   add.call(null, 1, 2)      ← ✅ both numbers
-        "strictBindCallApply": true,
-        // strictPropertyInitialization → already ON via strict:true — stated for clarity
-        // what   → every class property must be assigned in constructor or have a default
-        // example:
-        //   class LoginPage {
-        //     emailInput: Locator              ← ❌ never assigned — undefined at runtime
-        //     emailInput!: Locator             ← ! means "trust me" — use carefully
-        //     constructor(page: Page) {
-        //       this.emailInput = page.locator("#email")  ← ✅ assigned here
-        //     }
-        //   }
-        "strictPropertyInitialization": true,
-        // noImplicitOverride → is the KEY
-        // true               → is the VALUE
-        // what   → child class must write 'override' keyword when replacing a parent method
-        // example:
-        //   class BasePage { navigate() {} }
-        //   class LoginPage extends BasePage {
-        //     navigate() {}           ← ❌ silently overrides — error
-        //     override navigate() {}  ← ✅ explicit intention declared
-        //   }
-        "noImplicitOverride": true,
-        // noImplicitReturns → is the KEY
-        // true              → is the VALUE
-        // what   → every code path in a function must return a value
-        // example:
-        //   function getStatus(code: number): string {
-        //     if (code === 200) return "OK"
-        //     // code 404 → returns undefined silently ← ❌ error
-        //   }
-        //   fix → add: return "Unknown"  at the end to cover all paths
-        "noImplicitReturns": true,
-        // noFallthroughCasesInSwitch → is the KEY
-        // true                       → is the VALUE
-        // what   → switch case blocks must end with break, return, or throw
-        // example:
-        //   switch(status) {
-        //     case "pass":
-        //       console.log("passed")   ← ❌ missing break — falls into next case
-        //     case "fail":
-        //       console.log("failed")   ← runs accidentally
-        //   }
-        //   fix → add break; after each case body
-        "noFallthroughCasesInSwitch": true,
-        // noUnusedLocals → is the KEY
-        // true           → is the VALUE
-        // what   → error if you declare a variable but never use it
-        // example:
-        //   function runTest() {
-        //     const retries = 3       ← ❌ declared but never used
-        //     console.log("Running")
-        //   }
-        "noUnusedLocals": true,
-        // noUnusedParameters → is the KEY
-        // true               → is the VALUE
-        // what   → error if a function parameter is declared but never used
-        // example:
-        //   function login(email: string, pass: string, retry: number): void {
-        //     console.log(email, pass)  ← retry never used ← ❌ error
-        //   }
-        //   tip → prefix with _ to intentionally ignore: _retry: number
-        "noUnusedParameters": true,
-        // noUncheckedIndexedAccess → is the KEY
-        // true                     → is the VALUE
-        // what   → accessing an array/object by index adds 'undefined' to the result type
-        //          forces you to handle the case where the index does not exist
-        // example:
-        //   const browsers = ["chromium", "firefox"]
-        //   const first = browsers[0]
-        //   first.toUpperCase()            ← ❌ first could be undefined
-        //   first?.toUpperCase()           ← ✅ optional chaining — safe
-        //   if (first) first.toUpperCase() ← ✅ null guard — safe
-        "noUncheckedIndexedAccess": true,
-        // exactOptionalPropertyTypes → is the KEY
-        // true                       → is the VALUE
-        // what   → optional properties (key?: string) can only be ABSENT or the exact type
-        //          they CANNOT be explicitly set to undefined
-        // example:
-        //   interface Test { priority?: string }
-        //   const t: Test = { priority: undefined }  ← ❌ error
-        //   const t: Test = { priority: "high" }     ← ✅ the actual string type
-        //   const t: Test = {}                       ← ✅ absent (field omitted entirely)
-        "exactOptionalPropertyTypes": false,
-        // noPropertyAccessFromIndexSignature → is the KEY
-        // true                               → is the VALUE
-        // what   → when an object uses an index signature, you must use bracket notation
-        // example:
-        //   interface Config { [key: string]: string }
-        //   config.timeout      ← ❌ dot notation not allowed for index signatures
-        //   config["timeout"]   ← ✅ bracket notation required
-        // why    → makes it visually obvious that this is a dynamic lookup, not a known key
-        "noPropertyAccessFromIndexSignature": false,
-        // ══════════════════════════════════════════════════════════════
-        //  SECTION 6 — TYPES
-        //  Controls which type definition packages TypeScript loads globally
-        // ══════════════════════════════════════════════════════════════
-        // types    → is the KEY
-        // []       → is the VALUE (array of @types/* packages to load everywhere)
-        // what     → makes these type packages available across ALL files without importing
-        // "node"   → loads @types/node — gives you process.env, __dirname, Buffer globally
-        //            requires: npm install --save-dev @types/node
-        // without "node" in types → Cannot find name 'process'
-        //                           even after installing @types/node
-        "types": [
-            "node"
-        ],
-        // typeRoots → is the KEY
-        // []        → is the VALUE (array of folders where TypeScript looks for type packages)
-        // "./node_modules/@types" → standard location for all installed @types/* packages
-        // "./tests/types"         → YOUR own custom type declaration files
-        //   example inside tests/types/global.d.ts:
-        //     declare global {
-        //       var BASE_URL: string   ← makes BASE_URL a known global across all files
-        //     }
-        "typeRoots": [
-            "./node_modules/@types",
-            "./tests/types"
-        ],
-        // ══════════════════════════════════════════════════════════════
-        //  SECTION 7 — COMPLETENESS
-        //  Final performance and compatibility options
-        // ══════════════════════════════════════════════════════════════
-        // skipLibCheck → is the KEY
-        // true         → is the VALUE
-        // what   → skip type checking inside all .d.ts files in node_modules
-        // why    → some npm packages have imperfect type declarations — not your problem
-        //          checking all installed packages produces hundreds of irrelevant errors
-        //          and slows down the TypeScript compiler significantly
-        // trade-off → you skip checking third-party types — but gain speed and clean errors
-        "skipLibCheck": true,
-        // skipDefaultLibCheck → is the KEY
-        // true                → is the VALUE
-        // what   → skip type checking on TypeScript's own built-in library files
-        //          (the files that define string, number, Array, Promise, etc.)
-        // why    → TypeScript's own lib files are always correct — no need to re-check
-        //          them on every compilation — speeds up the compiler
-        "skipDefaultLibCheck": true
+  "compilerOptions": {
+    // ══════════════════════════════════════════════════════════════
+    // PART 1: THE TRANSLATOR
+    // ══════════════════════════════════════════════════════════════
+    
+    // 🎯 WHAT IT DOES: Translates your code into the modern 2022 version of JavaScript.
+    // 💥 IF YOU DELETE THIS: It uses a super old version of JavaScript, which slows down your tests.
+    // 💡 EXAMPLE: It allows you to use modern, clean code like: await page.click('#login-button');
+    "target": "ES2022",
+    
+    // 🎯 WHAT IT DOES: Teaches TypeScript words related to web pages.
+    // 💥 IF YOU DELETE THIS: TypeScript will draw red error lines under normal web commands.
+    // 💡 EXAMPLE: Without this, TypeScript will say "I don't know what 'document' is!"
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    
+    // 🎯 WHAT IT DOES: Allows you to use the "@" symbol to label parts of your code.
+    // 💥 IF YOU DELETE THIS: You will get syntax errors if you try to use advanced labels.
+    // 💡 EXAMPLE: You can label a test class like this: @TestSuite
+    "experimentalDecorators": true,
+
+    // 🎯 WHAT IT DOES: Adds extra hidden information to your "@" labels.
+    // 💥 IF YOU DELETE THIS: Advanced testing tools won't be able to read your class labels.
+    // 💡 EXAMPLE: The computer can automatically know if a variable is a string or number just by looking at it.
+    "emitDecoratorMetadata": true,
+
+    // 🎯 WHAT IT DOES: Uses the newest, safest JavaScript rules for creating variables inside classes.
+    // 💥 IF YOU DELETE THIS: You might get weird, invisible bugs when setting up your Page Objects.
+    // 💡 EXAMPLE: class Page { myButton = "Click Me"; } will work perfectly.
+    "useDefineForClassFields": true,
+
+    // ══════════════════════════════════════════════════════════════
+    // PART 2: THE FILE CONNECTOR
+    // ══════════════════════════════════════════════════════════════
+    
+    // 🎯 WHAT IT DOES: Uses the modern standard for connecting files together.
+    // 💥 IF YOU DELETE THIS: File A won't be able to share its code with File B.
+    // 💡 EXAMPLE: It lets you use modern imports: import { test } from '@playwright/test';
+    "module": "Node16",
+
+    // 🎯 WHAT IT DOES: Tells the computer exactly *how* to search for the files you are trying to import.
+    // 💥 IF YOU DELETE THIS: The computer might look in the wrong folders and say "File not found."
+    // 💡 EXAMPLE: It knows to automatically look inside the 'node_modules' folder for downloaded tools.
+    "moduleResolution": "Node16",
+
+    // 🎯 WHAT IT DOES: Tells TypeScript where your main project folder starts.
+    // 💥 IF YOU DELETE THIS: The translated files in the "dist" folder will have a weird, messy folder structure.
+    // 💡 EXAMPLE: It knows that the folder where this tsconfig.json lives is the absolute center of your project.
+    "rootDir": ".",
+    
+    // 🎯 WHAT IT DOES: Lets you use data from a simple text file (.json file).
+    // 💥 IF YOU DELETE THIS: You won't be able to load test data from outside files.
+    // 💡 EXAMPLE: import users from './test-users.json';
+    "resolveJsonModule": true,
+
+    // 🎯 WHAT IT DOES: A helper that fixes badly written code from the internet.
+    // 💥 IF YOU DELETE THIS: Downloading older tools will cause annoying import errors.
+    // 💡 EXAMPLE: Lets you type `import fs from 'fs'` instead of the ugly `import * as fs from 'fs'`.
+    "allowSyntheticDefaultImports": true,
+    
+    // 🎯 WHAT IT DOES: Creates shortcuts for your folders! 
+    // 💥 IF YOU DELETE THIS: You will spend hours fixing broken file paths.
+    // 💡 EXAMPLE: Instead of: import { LoginPage } from "../../../page-objects/LoginPage";
+    //             You use:    import { LoginPage } from "@pom/LoginPage";
+    "paths": {
+      "@pages/*": ["./tests/pages/*", "./examples/pages/*"],
+      "@pom/*": ["./page-objects/*"],
+      "@testdata/*": ["./tests/testdata/*"],
+      "@fixtures": ["./tests/fixtures/testFixtures"],
+      "@pagesetup": ["./test-setup/page-setup"],
+      "@helpers/*": ["./tests/helpers/*"],
+      "@config": ["./playwright.config"],
+      "@types-custom/*": ["./tests/types/*"]
     },
+
     // ══════════════════════════════════════════════════════════════
-    //  SECTION 8 — INCLUDE
-    //  Tells TypeScript WHICH files and folders to type-check
+    // PART 3: THE OUTBOX
     // ══════════════════════════════════════════════════════════════
-    // include → is the KEY
-    // []      → is the VALUE (array of glob patterns to include)
-    // **      → matches any sub-folder at any depth inside the listed folder
-    // *       → matches any file name with any extension
-    // *.ts    → matches only TypeScript files
-    "include": [
-        "tests/**/*.ts",
-        // tests/    → the main test folder
-        // **/       → any sub-folder inside (pages/, fixtures/, testdata/, helpers/, etc.)
-        // *.ts      → every TypeScript file inside
-        "page-objects/**/*.ts",
-        // page-objects/ → the Page Object Model folder
-        // **/*.ts       → every TypeScript file at any depth
-        "test-setup/**/*.ts",
-        // test-setup/ → global setup and teardown files
-        // **/*.ts     → every TypeScript file inside
-        "examples/**/*.ts",
-        // examples/ → example test files and demo pages
-        // **/*.ts   → every TypeScript file inside
-        "playwright.config.ts",
-        // single file at root — no wildcard needed
-        // the main Playwright configuration file
-        "global.d.ts",
-        // your own global type declaration file at the project root
-        // use it for declaring global variables or augmenting existing types
-        // example:
-        //   declare global {
-        //     var baseURL: string
-        //   }
-        ".eslintrc.js"
-        // the ESLint config file
-        // included so TypeScript checks it if it uses TypeScript imports
+    
+    // 🎯 WHAT IT DOES: Puts all the translated JavaScript into a folder named "dist".
+    // 💥 IF YOU DELETE THIS: Translated files will make a massive mess of your project folder.
+    // 💡 EXAMPLE: Your file 'tests/login.ts' gets translated and neatly placed into 'dist/tests/login.js'.
+    "outDir": "dist",
+    
+    // 🎯 WHAT IT DOES: Creates a map connecting the translated code back to your original code.
+    // 💥 IF YOU DELETE THIS: Error messages will point to unreadable robot code.
+    // 💡 EXAMPLE: The computer tells you "Error on line 10 in login.ts" instead of "Error in translated.js".
+    "sourceMap": true,
+
+    // 🎯 WHAT IT DOES: Puts a copy of your original code directly inside the translation map.
+    // 💥 IF YOU DELETE THIS: If you run tests on a cloud server (like GitHub Actions), error messages won't show your code.
+    // 💡 EXAMPLE: A failing test in the cloud will still show your exact typing: await page.click('#login').
+    "inlineSources": true,
+    
+    // 🎯 WHAT IT DOES: Erases all these green comments in the final translated files.
+    // 💥 IF YOU DELETE THIS: The generated files become bloated and take up space.
+    // 💡 EXAMPLE: All the text you are reading right now gets deleted in the final background files so they run faster.
+    "removeComments": true,
+
+    // 🎯 WHAT IT DOES: Stops TypeScript from generating extra "dictionary" files (.d.ts).
+    // 💥 IF YOU CHANGE TO TRUE: It creates duplicate files you don't need for a testing project.
+    // 💡 EXAMPLE: You only need these if you are building a tool for *other* people to download.
+    "declaration": false,
+
+    // 🎯 WHAT IT DOES: Source maps for the dictionary files (which we turned off above).
+    // 💥 IF YOU CHANGE TO TRUE: It creates even more useless files.
+    // 💡 EXAMPLE: Set to false to keep your project clean.
+    "declarationMap": false,
+
+    // 🎯 WHAT IT DOES: Borrows small helper functions instead of copying them into every single file.
+    // 💥 IF YOU DELETE THIS: Your translated JavaScript files will be huge and repetitive.
+    // 💡 EXAMPLE: If 10 files use "async/await", the helper code is downloaded once instead of 10 times.
+    "importHelpers": true,
+
+    // 🎯 WHAT IT DOES: If set to true, it acts like a spellchecker but NEVER creates the final files.
+    // 💥 IF YOU SET TO TRUE FOREVER: You won't actually get any code to run.
+    // 💡 EXAMPLE: We keep this 'false' here, but we use it in the terminal like this: `tsc --noEmit`.
+    "noEmit": false,
+    
+    // 🎯 WHAT IT DOES: If your code has a red error, it refuses to do the translation!
+    // 💥 IF YOU DELETE THIS: The computer will translate your broken code anyway.
+    // 💡 EXAMPLE: If you misspell a word (`await page.clck()`), it stops and forces you to fix it.
+    "noEmitOnError": true,
+
+    // ══════════════════════════════════════════════════════════════
+    // PART 4: THE STRICT BOUNCER
+    // ══════════════════════════════════════════════════════════════
+    
+    // 🎯 WHAT IT DOES: Turns on all the safety checks. (This is the master switch).
+    // 💥 IF YOU DELETE THIS: Bugs will sneak into your tests.
+    // 💡 EXAMPLE: It automatically turns on all the strict rules below.
+    "strict": true,
+    
+    // 🎯 WHAT IT DOES: Forces you to say exactly what type of data a variable is.
+    // 💥 IF YOU DELETE THIS: TypeScript will just "guess" what your variables are, which causes bugs.
+    // 💡 EXAMPLE: function login(email: string) { ... }
+    "noImplicitAny": true,
+    
+    // 🎯 WHAT IT DOES: Forces you to check if something is empty before using it.
+    // 💥 IF YOU DELETE THIS: Your test will try to click a button that hasn't loaded yet.
+    // 💡 EXAMPLE: if (myVariable !== null) { doSomething() }
+    "strictNullChecks": true,
+
+    // 🎯 WHAT IT DOES: Forces you to pass the exact right type of data into advanced functions.
+    // 💥 IF YOU DELETE THIS: You might accidentally pass a Mouse Click to something expecting a Keyboard Press.
+    // 💡 EXAMPLE: A function asks for (e: MouseEvent). If you pass (e: Event), it throws a red error!
+    "strictFunctionTypes": true,
+
+    // 🎯 WHAT IT DOES: A strict check for advanced JavaScript functions (.bind, .call).
+    // 💥 IF YOU DELETE THIS: You might pass a word into a function that expects a number.
+    // 💡 EXAMPLE: If a function expects a number, `myFunc.call(null, "hello")` will throw an error.
+    "strictBindCallApply": true,
+
+    // 🎯 WHAT IT DOES: Forces you to actually attach your locators to your class.
+    // 💥 IF YOU DELETE THIS: You might declare a button but forget to link it to the screen, causing a crash.
+    // 💡 EXAMPLE: class Login { button: Locator; } -> Error! You must do: this.button = page.locator('#btn');
+    "strictPropertyInitialization": true,
+
+    // 🎯 WHAT IT DOES: Makes you type the word "override" if you are replacing a parent's rules.
+    // 💥 IF YOU DELETE THIS: You might accidentally overwrite an important test tool without realizing it.
+    // 💡 EXAMPLE: class MyTest extends BaseTest { override setup() { ... } }
+    "noImplicitOverride": true,
+
+    // 🎯 WHAT IT DOES: Makes sure every possible path in your code gives an answer.
+    // 💥 IF YOU DELETE THIS: Your code might accidentally return "nothing", breaking your test.
+    // 💡 EXAMPLE: If you write a function that returns `true` for passing, you MUST also write `return false` for failing.
+    "noImplicitReturns": true,
+
+    // 🎯 WHAT IT DOES: Stops "switch" statements from running multiple blocks of code accidentally.
+    // 💥 IF YOU DELETE THIS: Code meant for scenario A might accidentally run during scenario B.
+    // 💡 EXAMPLE: Forces you to write `break;` at the end of every `case`.
+    "noFallthroughCasesInSwitch": true,
+    
+    // 🎯 WHAT IT DOES: Puts a red line under any variable you created but forgot to actually use.
+    // 💥 IF YOU DELETE THIS: Your files will fill up with dead, useless code over the months.
+    // 💡 EXAMPLE: const password = "123"; // Red error here if you never use 'password' later!
+    "noUnusedLocals": true,
+
+    // 🎯 WHAT IT DOES: Warns you if you create a function parameter but never use it.
+    // 💥 IF YOU DELETE THIS: You will have confusing functions that take inputs but do absolutely nothing with them.
+    // 💡 EXAMPLE: function login(email, password) -> Error! You typed 'password' but never actually used it.
+    "noUnusedParameters": true,
+
+    // 🎯 WHAT IT DOES: Forces you to check if a specific item in a list actually exists before using it.
+    // 💥 IF YOU DELETE THIS: You might ask for the 5th item in a list of 3 things, and the program will crash.
+    // 💡 EXAMPLE: const firstUser = users[0]; -> You must do `if (firstUser) { ... }` before using it.
+    "noUncheckedIndexedAccess": true,
+    
+    // 🎯 WHAT IT DOES: A special rule just for Playwright to prevent annoying fake errors.
+    // 💥 IF YOU CHANGE TO TRUE: Playwright's config file will yell at you for completely normal settings.
+    // 💡 EXAMPLE: In Playwright, you can set `workers: undefined`. If this was true, that would be an error.
+    "exactOptionalPropertyTypes": false,
+    
+    // 🎯 WHAT IT DOES: Lets you write simple code to get system passwords or usernames.
+    // 💥 IF YOU CHANGE TO TRUE: You are forced to write clunky code.
+    // 💡 EXAMPLE: Good: process.env.PASSWORD | Ugly: process.env["PASSWORD"]
+    "noPropertyAccessFromIndexSignature": false,
+
+    // ══════════════════════════════════════════════════════════════
+    // PART 5: THE PEACEMAKER
+    // ══════════════════════════════════════════════════════════════
+    
+    // 🎯 WHAT IT DOES: An automatic adapter that helps you use older code from the internet easily.
+    // 💥 IF YOU DELETE THIS: You will get confusing import errors when using third-party tools.
+    // 💡 EXAMPLE: import myTool from 'old-tool'; (Instead of doing import * as myTool).
+    "esModuleInterop": true,
+    
+    // 🎯 WHAT IT DOES: Forces you to use exact uppercase and lowercase letters for file names.
+    // 💥 IF YOU DELETE THIS: Your code will CRASH when you share it with your team on a Linux server.
+    // 💡 EXAMPLE: If file is "LoginPage.ts", typing `import { page } from "./loginpage.ts";` gives a Red Error!
+    "forceConsistentCasingInFileNames": true,
+
+    // 🎯 WHAT IT DOES: Treats every single file as its own separate island to make it safer.
+    // 💥 IF YOU DELETE THIS: Fast-compiling tools might crash if you try to use them later.
+    // 💡 EXAMPLE: It forces you to write `export type { MyType }` instead of just `export { MyType }`.
+    "isolatedModules": true,
+
+    // ══════════════════════════════════════════════════════════════
+    // PART 6: THE DICTIONARY
+    // ══════════════════════════════════════════════════════════════
+    
+    // 🎯 WHAT IT DOES: Teaches TypeScript words related to your computer's system.
+    // 💥 IF YOU DELETE THIS: You won't be able to read system settings needed for cloud testing.
+    // 💡 EXAMPLE: It teaches TypeScript the word "process", allowing you to write: process.env.BASE_URL;
+    "types": ["node"],
+
+    // 🎯 WHAT IT DOES: Tells the computer exactly where to look for custom dictionary words.
+    // 💥 IF YOU DELETE THIS: Global variables you create won't be recognized across your project.
+    // 💡 EXAMPLE: You can put a file in `./tests/types` that teaches TypeScript a brand new word!
+    "typeRoots": [
+      "./node_modules/@types",
+      "./tests/types"
     ],
-    // ══════════════════════════════════════════════════════════════
-    //  SECTION 9 — EXCLUDE
-    //  Tells TypeScript which folders to COMPLETELY IGNORE
-    // ══════════════════════════════════════════════════════════════
-    // exclude → is the KEY
-    // []      → is the VALUE (array of folders to skip entirely)
-    "exclude": [
-        "node_modules",
-        // all installed npm packages
-        // excluded by default but listed explicitly so teammates know it is intentional
-        // and so you can add more exclusions below as the project grows
-        "dist",
-        // the compiled JavaScript output folder
-        // TypeScript should only check SOURCE .ts files — not its own compiled output
-        // checking dist/ causes duplicate errors for every file
-        "playwright-report",
-        // Playwright's HTML test report folder — generated after each test run
-        // contains HTML, JSON, screenshots — not TypeScript source code
-        "test-results",
-        // Playwright's raw test artifacts (videos, traces, screenshots)
-        // binary and JSON files — not TypeScript source code
-        ".github",
-        // GitHub Actions workflow YAML files
-        // not TypeScript source code
-        "**/*.js"
-        // any JavaScript file anywhere in the project
-        // you are writing TypeScript — .js files should not be type-checked
-        // if an old .js file exists from migration, TypeScript ignores it cleanly
-    ]
+    
+    // 🎯 WHAT IT DOES: Tells the bouncer to ignore errors in other people's code.
+    // 💥 IF YOU DELETE THIS: Your computer will freeze trying to check millions of lines of downloaded code.
+    // 💡 EXAMPLE: It skips checking the massive 'node_modules' folder.
+    "skipLibCheck": true,
+
+    // 🎯 WHAT IT DOES: Stops TypeScript from checking its own built-in computer dictionary for errors.
+    // 💥 IF YOU DELETE THIS: Your code will take longer to translate for no reason.
+    // 💡 EXAMPLE: It trusts that Microsoft wrote the built-in JavaScript rules correctly, so it skips checking them.
+    "skipDefaultLibCheck": true
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // PART 7: THE WORK AREA
+  // ══════════════════════════════════════════════════════════════
+  
+  // 🎯 WHAT IT DOES: ONLY check for errors in these specific folders.
+  // 💥 IF YOU DELETE THIS: TypeScript might miss your files and fail to warn you about bugs.
+  // 💡 EXAMPLE: If you create `tests/my-new-test.ts`, TypeScript will watch it and protect it automatically.
+  "include": [
+    "tests/**/*.ts",
+    "page-objects/**/*.ts",
+    "test-setup/**/*.ts",
+    "examples/**/*.ts",
+    "playwright.config.ts",
+    "global.d.ts",
+    ".eslintrc.js"
+  ],
+  
+  // 🎯 WHAT IT DOES: Completely IGNORE everything in these folders.
+  // 💥 IF YOU DELETE THIS: TypeScript will try to read all your downloaded packages and test videos, causing crashes.
+  // 💡 EXAMPLE: When Playwright creates a test video in `test-results`, TypeScript ignores it.
+  "exclude": [
+    "node_modules",
+    "dist",
+    "playwright-report",
+    "test-results",
+    ".github",
+    "**/*.js"
+  ]
 }
