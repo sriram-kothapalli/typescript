@@ -4,21 +4,21 @@
 // ══════════════════════════════════════════════════════════════
 
 async function fetchTitle(url: string): Promise<string> {
-// async         → is the keyword — marks this function as asynchronous
-// function      → is the keyword
-// fetchTitle    → is the function name
-// url           → is the parameter name
-// :string       → is the parameter type
-// :Promise<string> → is the return type
-//    Promise    → means "I will give you a value eventually, not right now"
-//    <string>   → means the value that eventually arrives will be a string
+  // async         → is the keyword — marks this function as asynchronous
+  // function      → is the keyword
+  // fetchTitle    → is the function name
+  // url           → is the parameter name
+  // :string       → is the parameter type
+  // :Promise<string> → is the return type
+  //    Promise    → means "I will give you a value eventually, not right now"
+  //    <string>   → means the value that eventually arrives will be a string
 
   return `Title of ${url}`;
   // return → sends the value back (async wraps it in a Promise automatically)
 }
 
 async function runTest(): Promise<void> {
-// :Promise<void> → async function that eventually returns nothing
+  // :Promise<void> → async function that eventually returns nothing
 
   const title = await fetchTitle("https://example.com");
   // const    → is a constant keyword
@@ -34,21 +34,22 @@ async function runTest(): Promise<void> {
 async function safeRun(url: string): Promise<void> {
 
   try {
-  // try → is the keyword — attempt the code inside this block
+    // try → is the keyword — attempt the code inside this block
 
     const title = await fetchTitle(url);
     // if fetchTitle throws an error → execution jumps to catch block
     console.log("Success:", title);
 
   } catch (error) {
-  // catch  → is the keyword — runs if ANYTHING inside try fails
-  // error  → is the parameter that holds the error details
+    // catch  → is the keyword — runs if ANYTHING inside try fails
+    // error  → is the parameter that holds the error details
 
     console.error("Failed:", error);
     // console.error → prints to terminal as an error message
 
   } finally {
-  // finally → is the keyword — ALWAYS runs whether try succeeded or catch ran
+    // finally → is the keyword — ALWAYS runs whether try succeeded or catch ran
+    // note    → In Playwright, this is where we safely close the browser even if a test fails!
 
     console.log("Test finished");
   }
@@ -57,9 +58,9 @@ async function safeRun(url: string): Promise<void> {
 async function runParallel(): Promise<void> {
 
   const [t1, t2] = await Promise.all([
-  // Promise.all → is a built-in that runs multiple async calls AT THE SAME TIME
-  //               waits for ALL of them to finish, then gives results as an array
-  // [t1, t2]    → destructures the results array into two named variables
+    // Promise.all → is a built-in that runs multiple async calls AT THE SAME TIME
+    //               waits for ALL of them to finish, then gives results as an array
+    // [t1, t2]    → destructures the results array into two named variables
 
     fetchTitle("https://example.com/login"),
     // this is the first async call — result goes into t1
@@ -69,4 +70,32 @@ async function runParallel(): Promise<void> {
   ]);
 
   console.log(t1, t2);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXAMPLE 5 — THE "FOR LOOP" TRAP
+//  Never use .forEach() with await! Use a 'for...of' loop instead.
+// ══════════════════════════════════════════════════════════════
+
+async function checkAllLinks(links: string[]): Promise<void> {
+
+  // ❌ BAD WAY (TypeScript won't stop you, but the test will break!)
+  // links.forEach(async (link) => {
+  //   await fetchTitle(link);
+  // });
+  // error reason → .forEach() does NOT wait for the promises to finish. It fires them all instantly and moves on!
+
+  // ✅ GOOD WAY (The standard Playwright way to loop and wait)
+  for (const link of links) {
+    // for         → is the loop keyword
+    // const link  → creates a constant for the current item in the list
+    // of          → is the keyword that extracts each item from the array
+    // links       → is the array we are looping through
+
+    const result = await fetchTitle(link);
+    // await     → correctly pauses the loop here until THIS link is completely finished
+    // result    → stores the awaited title before the loop moves to the next link
+
+    console.log(result);
+  }
 }

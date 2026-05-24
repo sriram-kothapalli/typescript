@@ -4,12 +4,12 @@
 // ══════════════════════════════════════════════════════════════
 
 interface Config {
-// Config → is the interface name — defines required fields for configuration
+  // Config → is the interface name — defines required fields for configuration
 
-  baseURL  : string;   // key=baseURL  | type=string  | required
-  timeout  : number;   // key=timeout  | type=number  | required
-  headless : boolean;  // key=headless | type=boolean | required
-  retries  : number;   // key=retries  | type=number  | required
+  baseURL: string;   // key=baseURL  | type=string  | required
+  timeout: number;   // key=timeout  | type=number  | required
+  headless: boolean;  // key=headless | type=boolean | required
+  retries: number;   // key=retries  | type=number  | required
 }
 
 type PartialConfig = Partial<Config>;
@@ -18,7 +18,7 @@ type PartialConfig = Partial<Config>;
 // result     → ALL fields in Config become optional (?)
 // PartialConfig → is the name of the new type
 
-const override : PartialConfig = { timeout: 60000 };
+const override: PartialConfig = { timeout: 60000 };
 // override  → is the constant name
 // PartialConfig → allows any subset of Config fields — only timeout given ✅
 
@@ -45,17 +45,45 @@ type BrowserMap = Record<"chromium" | "firefox" | "webkit", number>;
 // second part   → is the value type (number)
 // result        → an object where keys are browser names and values are numbers
 
-const timeoutMap : BrowserMap = {
-  chromium : 30000,
+const timeoutMap: BrowserMap = {
+  chromium: 30000,
   // chromium → is the key (must be one of the three browser names)
   // :        → separates key from value
   // 30000    → is the number value assigned to the key chromium
 
-  firefox  : 45000,
+  firefox: 45000,
   // firefox  → is the key
   // 45000    → is the number value assigned to the key firefox
 
-  webkit   : 60000,
+  webkit: 60000,
   // webkit   → is the key
   // 60000    → is the number value assigned to the key webkit
 };
+
+// ══════════════════════════════════════════════════════════════
+//  EXAMPLE 2 — ReturnType
+//  Automatically copy the exact output type from an existing function
+// ══════════════════════════════════════════════════════════════
+
+function getLoginData() {
+  return { email: "tester@x.com", pass: "123", role: "admin" };
+}
+
+type LoginData = ReturnType<typeof getLoginData>;
+// ReturnType  → is the utility type keyword
+// <typeof getLoginData> → looks at the function and figures out exactly what it returns
+// result      → LoginData automatically becomes { email: string, pass: string, role: string }
+// note        → If you add a new field to the function later, this type updates automatically!
+
+// ══════════════════════════════════════════════════════════════
+//  EXAMPLE 3 — Awaited
+//  Unwraps a Promise to get the actual data inside (Crucial for Playwright)
+// ══════════════════════════════════════════════════════════════
+
+type AsyncTitle = Promise<string>;
+// Promise<string> → means this variable is a Promise that will EVENTUALLY be a string
+
+type ActualTitle = Awaited<AsyncTitle>;
+// Awaited    → is the utility type keyword
+// <AsyncTitle> → is the Promise type we are unwrapping
+// result     → ActualTitle becomes a pure 'string' type (it strips away the Promise wrapper!)
