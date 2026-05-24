@@ -3,227 +3,206 @@
     // ══════════════════════════════════════════════════════════════
     // PART 1: THE TRANSLATOR
     // ══════════════════════════════════════════════════════════════
-    
     // 🎯 WHAT IT DOES: Translates your code into the modern 2022 version of JavaScript.
     // 💥 IF YOU DELETE THIS: It uses a super old version of JavaScript, which slows down your tests.
     // 💡 EXAMPLE: It allows you to use modern, clean code like: await page.click('#login-button');
     "target": "ES2022",
-    
     // 🎯 WHAT IT DOES: Teaches TypeScript words related to web pages.
     // 💥 IF YOU DELETE THIS: TypeScript will draw red error lines under normal web commands.
     // 💡 EXAMPLE: Without this, TypeScript will say "I don't know what 'document' is!"
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     // 🎯 WHAT IT DOES: Allows you to use the "@" symbol to label parts of your code.
     // 💥 IF YOU DELETE THIS: You will get syntax errors if you try to use advanced labels.
     // 💡 EXAMPLE: You can label a test class like this: @TestSuite
     "experimentalDecorators": true,
-
     // 🎯 WHAT IT DOES: Adds extra hidden information to your "@" labels.
     // 💥 IF YOU DELETE THIS: Advanced testing tools won't be able to read your class labels.
     // 💡 EXAMPLE: The computer can automatically know if a variable is a string or number just by looking at it.
     "emitDecoratorMetadata": true,
-
     // 🎯 WHAT IT DOES: Uses the newest, safest JavaScript rules for creating variables inside classes.
     // 💥 IF YOU DELETE THIS: You might get weird, invisible bugs when setting up your Page Objects.
     // 💡 EXAMPLE: class Page { myButton = "Click Me"; } will work perfectly.
     "useDefineForClassFields": true,
-
     // ══════════════════════════════════════════════════════════════
     // PART 2: THE FILE CONNECTOR
     // ══════════════════════════════════════════════════════════════
-    
     // 🎯 WHAT IT DOES: Uses the modern standard for connecting files together.
     // 💥 IF YOU DELETE THIS: File A won't be able to share its code with File B.
     // 💡 EXAMPLE: It lets you use modern imports: import { test } from '@playwright/test';
     "module": "Node16",
-
     // 🎯 WHAT IT DOES: Tells the computer exactly *how* to search for the files you are trying to import.
     // 💥 IF YOU DELETE THIS: The computer might look in the wrong folders and say "File not found."
     // 💡 EXAMPLE: It knows to automatically look inside the 'node_modules' folder for downloaded tools.
     "moduleResolution": "Node16",
-
     // 🎯 WHAT IT DOES: Tells TypeScript where your main project folder starts.
     // 💥 IF YOU DELETE THIS: The translated files in the "dist" folder will have a weird, messy folder structure.
     // 💡 EXAMPLE: It knows that the folder where this tsconfig.json lives is the absolute center of your project.
     "rootDir": ".",
-    
     // 🎯 WHAT IT DOES: Lets you use data from a simple text file (.json file).
     // 💥 IF YOU DELETE THIS: You won't be able to load test data from outside files.
     // 💡 EXAMPLE: import users from './test-users.json';
     "resolveJsonModule": true,
-
     // 🎯 WHAT IT DOES: A helper that fixes badly written code from the internet.
     // 💥 IF YOU DELETE THIS: Downloading older tools will cause annoying import errors.
     // 💡 EXAMPLE: Lets you type `import fs from 'fs'` instead of the ugly `import * as fs from 'fs'`.
     "allowSyntheticDefaultImports": true,
-    
     // 🎯 WHAT IT DOES: Creates shortcuts for your folders! 
     // 💥 IF YOU DELETE THIS: You will spend hours fixing broken file paths.
     // 💡 EXAMPLE: Instead of: import { LoginPage } from "../../../page-objects/LoginPage";
     //             You use:    import { LoginPage } from "@pom/LoginPage";
     "paths": {
-      "@pages/*": ["./tests/pages/*", "./examples/pages/*"],
-      "@pom/*": ["./page-objects/*"],
-      "@testdata/*": ["./tests/testdata/*"],
-      "@fixtures": ["./tests/fixtures/testFixtures"],
-      "@pagesetup": ["./test-setup/page-setup"],
-      "@helpers/*": ["./tests/helpers/*"],
-      "@config": ["./playwright.config"],
-      "@types-custom/*": ["./tests/types/*"]
+      "@pages/*": [
+        "./tests/pages/*",
+        "./examples/pages/*"
+      ],
+      "@pom/*": [
+        "./page-objects/*"
+      ],
+      "@testdata/*": [
+        "./tests/testdata/*"
+      ],
+      "@fixtures": [
+        "./tests/fixtures/testFixtures"
+      ],
+      "@pagesetup": [
+        "./test-setup/page-setup"
+      ],
+      "@helpers/*": [
+        "./tests/helpers/*"
+      ],
+      "@config": [
+        "./playwright.config"
+      ],
+      "@types-custom/*": [
+        "./tests/types/*"
+      ]
     },
-
     // ══════════════════════════════════════════════════════════════
     // PART 3: THE OUTBOX
     // ══════════════════════════════════════════════════════════════
-    
     // 🎯 WHAT IT DOES: Puts all the translated JavaScript into a folder named "dist".
     // 💥 IF YOU DELETE THIS: Translated files will make a massive mess of your project folder.
     // 💡 EXAMPLE: Your file 'tests/login.ts' gets translated and neatly placed into 'dist/tests/login.js'.
     "outDir": "dist",
-    
     // 🎯 WHAT IT DOES: Creates a map connecting the translated code back to your original code.
     // 💥 IF YOU DELETE THIS: Error messages will point to unreadable robot code.
     // 💡 EXAMPLE: The computer tells you "Error on line 10 in login.ts" instead of "Error in translated.js".
     "sourceMap": true,
-
     // 🎯 WHAT IT DOES: Puts a copy of your original code directly inside the translation map.
     // 💥 IF YOU DELETE THIS: If you run tests on a cloud server (like GitHub Actions), error messages won't show your code.
     // 💡 EXAMPLE: A failing test in the cloud will still show your exact typing: await page.click('#login').
     "inlineSources": true,
-    
     // 🎯 WHAT IT DOES: Erases all these green comments in the final translated files.
     // 💥 IF YOU DELETE THIS: The generated files become bloated and take up space.
     // 💡 EXAMPLE: All the text you are reading right now gets deleted in the final background files so they run faster.
     "removeComments": true,
-
     // 🎯 WHAT IT DOES: Stops TypeScript from generating extra "dictionary" files (.d.ts).
     // 💥 IF YOU CHANGE TO TRUE: It creates duplicate files you don't need for a testing project.
     // 💡 EXAMPLE: You only need these if you are building a tool for *other* people to download.
     "declaration": false,
-
     // 🎯 WHAT IT DOES: Source maps for the dictionary files (which we turned off above).
     // 💥 IF YOU CHANGE TO TRUE: It creates even more useless files.
     // 💡 EXAMPLE: Set to false to keep your project clean.
     "declarationMap": false,
-
     // 🎯 WHAT IT DOES: Borrows small helper functions instead of copying them into every single file.
     // 💥 IF YOU DELETE THIS: Your translated JavaScript files will be huge and repetitive.
     // 💡 EXAMPLE: If 10 files use "async/await", the helper code is downloaded once instead of 10 times.
     "importHelpers": true,
-
     // 🎯 WHAT IT DOES: If set to true, it acts like a spellchecker but NEVER creates the final files.
     // 💥 IF YOU SET TO TRUE FOREVER: You won't actually get any code to run.
     // 💡 EXAMPLE: We keep this 'false' here, but we use it in the terminal like this: `tsc --noEmit`.
     "noEmit": false,
-    
     // 🎯 WHAT IT DOES: If your code has a red error, it refuses to do the translation!
     // 💥 IF YOU DELETE THIS: The computer will translate your broken code anyway.
     // 💡 EXAMPLE: If you misspell a word (`await page.clck()`), it stops and forces you to fix it.
     "noEmitOnError": true,
-
     // ══════════════════════════════════════════════════════════════
     // PART 4: THE STRICT BOUNCER
     // ══════════════════════════════════════════════════════════════
-    
     // 🎯 WHAT IT DOES: Turns on all the safety checks. (This is the master switch).
     // 💥 IF YOU DELETE THIS: Bugs will sneak into your tests.
     // 💡 EXAMPLE: It automatically turns on all the strict rules below.
     "strict": true,
-    
     // 🎯 WHAT IT DOES: Forces you to say exactly what type of data a variable is.
     // 💥 IF YOU DELETE THIS: TypeScript will just "guess" what your variables are, which causes bugs.
     // 💡 EXAMPLE: function login(email: string) { ... }
     "noImplicitAny": true,
-    
     // 🎯 WHAT IT DOES: Forces you to check if something is empty before using it.
     // 💥 IF YOU DELETE THIS: Your test will try to click a button that hasn't loaded yet.
     // 💡 EXAMPLE: if (myVariable !== null) { doSomething() }
     "strictNullChecks": true,
-
     // 🎯 WHAT IT DOES: Forces you to pass the exact right type of data into advanced functions.
     // 💥 IF YOU DELETE THIS: You might accidentally pass a Mouse Click to something expecting a Keyboard Press.
     // 💡 EXAMPLE: A function asks for (e: MouseEvent). If you pass (e: Event), it throws a red error!
     "strictFunctionTypes": true,
-
     // 🎯 WHAT IT DOES: A strict check for advanced JavaScript functions (.bind, .call).
     // 💥 IF YOU DELETE THIS: You might pass a word into a function that expects a number.
     // 💡 EXAMPLE: If a function expects a number, `myFunc.call(null, "hello")` will throw an error.
     "strictBindCallApply": true,
-
     // 🎯 WHAT IT DOES: Forces you to actually attach your locators to your class.
     // 💥 IF YOU DELETE THIS: You might declare a button but forget to link it to the screen, causing a crash.
     // 💡 EXAMPLE: class Login { button: Locator; } -> Error! You must do: this.button = page.locator('#btn');
     "strictPropertyInitialization": true,
-
     // 🎯 WHAT IT DOES: Makes you type the word "override" if you are replacing a parent's rules.
     // 💥 IF YOU DELETE THIS: You might accidentally overwrite an important test tool without realizing it.
     // 💡 EXAMPLE: class MyTest extends BaseTest { override setup() { ... } }
     "noImplicitOverride": true,
-
     // 🎯 WHAT IT DOES: Makes sure every possible path in your code gives an answer.
     // 💥 IF YOU DELETE THIS: Your code might accidentally return "nothing", breaking your test.
     // 💡 EXAMPLE: If you write a function that returns `true` for passing, you MUST also write `return false` for failing.
     "noImplicitReturns": true,
-
     // 🎯 WHAT IT DOES: Stops "switch" statements from running multiple blocks of code accidentally.
     // 💥 IF YOU DELETE THIS: Code meant for scenario A might accidentally run during scenario B.
     // 💡 EXAMPLE: Forces you to write `break;` at the end of every `case`.
     "noFallthroughCasesInSwitch": true,
-    
     // 🎯 WHAT IT DOES: Puts a red line under any variable you created but forgot to actually use.
     // 💥 IF YOU DELETE THIS: Your files will fill up with dead, useless code over the months.
     // 💡 EXAMPLE: const password = "123"; // Red error here if you never use 'password' later!
     "noUnusedLocals": true,
-
     // 🎯 WHAT IT DOES: Warns you if you create a function parameter but never use it.
     // 💥 IF YOU DELETE THIS: You will have confusing functions that take inputs but do absolutely nothing with them.
     // 💡 EXAMPLE: function login(email, password) -> Error! You typed 'password' but never actually used it.
     "noUnusedParameters": true,
-
     // 🎯 WHAT IT DOES: Forces you to check if a specific item in a list actually exists before using it.
     // 💥 IF YOU DELETE THIS: You might ask for the 5th item in a list of 3 things, and the program will crash.
     // 💡 EXAMPLE: const firstUser = users[0]; -> You must do `if (firstUser) { ... }` before using it.
     "noUncheckedIndexedAccess": true,
-    
     // 🎯 WHAT IT DOES: A special rule just for Playwright to prevent annoying fake errors.
     // 💥 IF YOU CHANGE TO TRUE: Playwright's config file will yell at you for completely normal settings.
     // 💡 EXAMPLE: In Playwright, you can set `workers: undefined`. If this was true, that would be an error.
     "exactOptionalPropertyTypes": false,
-    
     // 🎯 WHAT IT DOES: Lets you write simple code to get system passwords or usernames.
     // 💥 IF YOU CHANGE TO TRUE: You are forced to write clunky code.
     // 💡 EXAMPLE: Good: process.env.PASSWORD | Ugly: process.env["PASSWORD"]
     "noPropertyAccessFromIndexSignature": false,
-
     // ══════════════════════════════════════════════════════════════
     // PART 5: THE PEACEMAKER
     // ══════════════════════════════════════════════════════════════
-    
     // 🎯 WHAT IT DOES: An automatic adapter that helps you use older code from the internet easily.
     // 💥 IF YOU DELETE THIS: You will get confusing import errors when using third-party tools.
     // 💡 EXAMPLE: import myTool from 'old-tool'; (Instead of doing import * as myTool).
     "esModuleInterop": true,
-    
     // 🎯 WHAT IT DOES: Forces you to use exact uppercase and lowercase letters for file names.
     // 💥 IF YOU DELETE THIS: Your code will CRASH when you share it with your team on a Linux server.
     // 💡 EXAMPLE: If file is "LoginPage.ts", typing `import { page } from "./loginpage.ts";` gives a Red Error!
     "forceConsistentCasingInFileNames": true,
-
     // 🎯 WHAT IT DOES: Treats every single file as its own separate island to make it safer.
     // 💥 IF YOU DELETE THIS: Fast-compiling tools might crash if you try to use them later.
     // 💡 EXAMPLE: It forces you to write `export type { MyType }` instead of just `export { MyType }`.
     "isolatedModules": true,
-
     // ══════════════════════════════════════════════════════════════
     // PART 6: THE DICTIONARY
     // ══════════════════════════════════════════════════════════════
-    
     // 🎯 WHAT IT DOES: Teaches TypeScript words related to your computer's system.
     // 💥 IF YOU DELETE THIS: You won't be able to read system settings needed for cloud testing.
     // 💡 EXAMPLE: It teaches TypeScript the word "process", allowing you to write: process.env.BASE_URL;
-    "types": ["node"],
-
+    "types": [
+      "node"
+    ],
     // 🎯 WHAT IT DOES: Tells the computer exactly where to look for custom dictionary words.
     // 💥 IF YOU DELETE THIS: Global variables you create won't be recognized across your project.
     // 💡 EXAMPLE: You can put a file in `./tests/types` that teaches TypeScript a brand new word!
@@ -231,22 +210,18 @@
       "./node_modules/@types",
       "./tests/types"
     ],
-    
     // 🎯 WHAT IT DOES: Tells the bouncer to ignore errors in other people's code.
     // 💥 IF YOU DELETE THIS: Your computer will freeze trying to check millions of lines of downloaded code.
     // 💡 EXAMPLE: It skips checking the massive 'node_modules' folder.
     "skipLibCheck": true,
-
     // 🎯 WHAT IT DOES: Stops TypeScript from checking its own built-in computer dictionary for errors.
     // 💥 IF YOU DELETE THIS: Your code will take longer to translate for no reason.
     // 💡 EXAMPLE: It trusts that Microsoft wrote the built-in JavaScript rules correctly, so it skips checking them.
     "skipDefaultLibCheck": true
   },
-
   // ══════════════════════════════════════════════════════════════
   // PART 7: THE WORK AREA
   // ══════════════════════════════════════════════════════════════
-  
   // 🎯 WHAT IT DOES: ONLY check for errors in these specific folders.
   // 💥 IF YOU DELETE THIS: TypeScript might miss your files and fail to warn you about bugs.
   // 💡 EXAMPLE: If you create `tests/my-new-test.ts`, TypeScript will watch it and protect it automatically.
@@ -259,7 +234,6 @@
     "global.d.ts",
     ".eslintrc.js"
   ],
-  
   // 🎯 WHAT IT DOES: Completely IGNORE everything in these folders.
   // 💥 IF YOU DELETE THIS: TypeScript will try to read all your downloaded packages and test videos, causing crashes.
   // 💡 EXAMPLE: When Playwright creates a test video in `test-results`, TypeScript ignores it.
